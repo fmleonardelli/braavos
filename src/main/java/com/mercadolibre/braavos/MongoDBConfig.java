@@ -1,10 +1,11 @@
 package com.mercadolibre.braavos;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.mercadolibre.braavos.charges.repository.NotificationRepository;
+import com.mercadolibre.braavos.charges.repository.InvoiceRepository;
 import com.mongodb.MongoClient;
 import io.vavr.jackson.datatype.VavrModule;
 import lombok.val;
@@ -37,12 +38,13 @@ public class MongoDBConfig {
         objectMapper.registerModule(new CustomDateModule());
         objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE);
         objectMapper.configure(SerializationFeature.WRITE_DATE_KEYS_AS_TIMESTAMPS, false);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         return objectMapper;
     }
 
     @Bean
-    public NotificationRepository notificationRepository(MongoClient mongoClient) {
-        return new NotificationRepository(mongoClient, databaseName, "chargeNotifications", mongoObjectMapper());
+    public InvoiceRepository invoiceRepository(MongoClient mongoClient) {
+        return new InvoiceRepository(mongoClient, databaseName, "invoice", mongoObjectMapper());
     }
 }

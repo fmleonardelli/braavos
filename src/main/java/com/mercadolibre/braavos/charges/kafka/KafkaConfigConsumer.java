@@ -1,6 +1,5 @@
 package com.mercadolibre.braavos.charges.kafka;
 
-import com.mercadolibre.lannister.charges.EventApi;
 import lombok.val;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -27,19 +26,19 @@ public class KafkaConfigConsumer {
     private String groupId;
 
     @Bean
-    public ConsumerFactory<String, EventApi> consumerFactory() {
+    public ConsumerFactory<String, Event> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,  bootstrapServers);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-        val jsonDeserializer = new JsonDeserializer<>(EventApi.class);
+        val jsonDeserializer = new JsonDeserializer<>(Event.class, false);
         jsonDeserializer.addTrustedPackages("*");
 
         return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), jsonDeserializer);
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, EventApi> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, EventApi> factory = new ConcurrentKafkaListenerContainerFactory<>();
+    public ConcurrentKafkaListenerContainerFactory<String, Event> kafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, Event> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         return factory;
     }
