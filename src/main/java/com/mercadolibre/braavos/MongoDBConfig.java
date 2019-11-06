@@ -45,6 +45,6 @@ public class MongoDBConfig {
 
     @Bean
     public InvoiceRepository invoiceRepository(MongoClient mongoClient) {
-        return new InvoiceRepository(mongoClient, databaseName, "invoice", mongoObjectMapper());
+        return new InvoiceRepository(mongoClient, databaseName, "invoiceCollection", mongoObjectMapper());
     }
 }
