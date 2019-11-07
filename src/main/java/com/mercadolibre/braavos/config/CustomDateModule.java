@@ -1,4 +1,4 @@
-package com.mercadolibre.braavos;
+package com.mercadolibre.braavos.config;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
