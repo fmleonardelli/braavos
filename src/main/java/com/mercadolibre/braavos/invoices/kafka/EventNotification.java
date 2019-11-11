@@ -10,7 +10,7 @@ public class EventNotification {
     String userId;
     Instant date;
     String eventType;
-    Long eventId;
+    String eventId;
     String currency;
     Double amount;
 }
