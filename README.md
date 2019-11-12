@@ -1,7 +1,7 @@
 ## Braavos
 Braavos es responsable de escuchar los eventos notificados por la cola de mensajería y administrar cargos y pagos generados por los usuarios por los distintos servicios que ofrece Mercado Libre.
 
-![Nombre de proyecto](https://srv.latostadora.com/designall.dll/un_lannister_siempre_paga_sus_deudas--i:1413853260381413859;x:9;w:520;m:1.jpg)
+![Nombre de proyecto](https://i.ebayimg.com/images/g/75sAAOSwiBBcgx4c/s-l300.jpg)
 
 ### Pre-Requisitos
 El proyecto para un correcto funcionamiento requiere tener instalado el siguiente stack de tecnologías:
