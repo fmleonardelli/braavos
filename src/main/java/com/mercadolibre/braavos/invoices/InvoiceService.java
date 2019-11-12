@@ -5,7 +5,7 @@ import com.mercadolibre.braavos.invoices.charges.ChargeState;
 import com.mercadolibre.braavos.invoices.kafka.EventNotification;
 import com.mercadolibre.braavos.invoices.payments.PaymentApi;
 import com.mercadolibre.braavos.invoices.payments.model.PaymentHelper;
-import com.mercadolibre.braavos.invoices.repository.InvoiceRepository;
+import com.mercadolibre.braavos.invoices.repo.InvoiceRepository;
 import io.vavr.collection.List;
 import io.vavr.control.Either;
 import lombok.AccessLevel;

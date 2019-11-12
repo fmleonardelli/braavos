@@ -13,8 +13,4 @@ public enum CurrencyType {
     String description;
     String identifier;
     Boolean isDefault;
-
-    public void hello() {
-
-    }
 }

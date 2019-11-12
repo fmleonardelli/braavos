@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
-import com.mercadolibre.braavos.invoices.repository.InvoiceRepository;
+import com.mercadolibre.braavos.invoices.repo.InvoiceRepository;
 import com.mongodb.MongoClient;
 import io.vavr.jackson.datatype.VavrModule;
 import lombok.val;

@@ -1,8 +1,11 @@
-package com.mercadolibre.braavos.invoices.repository;
+package com.mercadolibre.braavos.invoices.repo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibre.braavos.config.Repository;
 import com.mercadolibre.braavos.invoices.Invoice;
+import com.mercadolibre.braavos.invoices.repo.functions.RepositoryFind;
+import com.mercadolibre.braavos.invoices.repo.functions.RepositoryFindOne;
+import com.mercadolibre.braavos.invoices.repo.functions.RepositoryUpdate;
 import com.mongodb.MongoClient;
 import com.mongodb.client.model.IndexOptions;
 import io.vavr.collection.HashMap;

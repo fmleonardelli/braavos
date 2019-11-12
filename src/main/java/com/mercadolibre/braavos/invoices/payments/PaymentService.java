@@ -1,6 +1,6 @@
 package com.mercadolibre.braavos.invoices.payments;
 
-import com.mercadolibre.braavos.invoices.repository.InvoiceRepository;
+import com.mercadolibre.braavos.invoices.repo.InvoiceRepository;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;

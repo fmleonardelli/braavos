@@ -1,4 +1,4 @@
-package com.mercadolibre.braavos.invoices.repository;
+package com.mercadolibre.braavos.invoices.repo.functions;
 
 @FunctionalInterface
 public interface RepositoryFind<T> {
