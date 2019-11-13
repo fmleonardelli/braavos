@@ -1,4 +1,4 @@
-package com.mercadolibre.braavos.invoices.api;
+package com.mercadolibre.braavos.invoices.api.error;
 
 import lombok.AllArgsConstructor;
 import lombok.Value;

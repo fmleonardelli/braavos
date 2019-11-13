@@ -1,5 +1,6 @@
-package com.mercadolibre.braavos.invoices.api;
+package com.mercadolibre.braavos.invoices.api.error;
 
+import org.omg.CosNaming.NamingContextPackage.NotFound;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,12 @@ public class ExceptionHandlers {
     public ResponseEntity<ApiError> validationErrorException(ValidationError ex) {
         logger.error(ex.getMessage(), ex);
         return new ResponseEntity<ApiError>(new ApiError(HttpStatus.BAD_REQUEST.toString(), ex.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(DataNotFound.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<ApiError> notFoundException(NotFound ex) {
+        return new ResponseEntity<ApiError>(new ApiError(HttpStatus.NOT_FOUND.toString(), ex.getMessage()), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(Exception.class)

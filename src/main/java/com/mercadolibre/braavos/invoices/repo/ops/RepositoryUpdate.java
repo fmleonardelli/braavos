@@ -1,4 +1,4 @@
-package com.mercadolibre.braavos.invoices.repo.functions;
+package com.mercadolibre.braavos.invoices.repo.ops;
 
 @FunctionalInterface
 public interface RepositoryUpdate<T> {

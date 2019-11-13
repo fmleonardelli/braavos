@@ -1,7 +1,10 @@
 package com.mercadolibre.braavos.invoices.payments;
 
 import com.mercadolibre.braavos.invoices.InvoiceService;
+import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,8 +16,9 @@ public class PaymentController {
     InvoiceService invoiceService;
 
     @PostMapping("payments")
-    public String create(@RequestBody PaymentApi payment) {
-        invoiceService.addPayment(payment);
-        return "ok";
+    public ResponseEntity create(@RequestBody PaymentInputApi payment) throws Throwable {
+        val res = invoiceService.addPayment(payment);
+        if (res.isRight()) return new ResponseEntity<>(HttpStatus.ACCEPTED);
+        else throw res.getLeft();
     }
 }

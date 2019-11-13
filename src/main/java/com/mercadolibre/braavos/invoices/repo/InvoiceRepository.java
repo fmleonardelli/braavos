@@ -3,9 +3,10 @@ package com.mercadolibre.braavos.invoices.repo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibre.braavos.config.Repository;
 import com.mercadolibre.braavos.invoices.Invoice;
-import com.mercadolibre.braavos.invoices.repo.functions.RepositoryFind;
-import com.mercadolibre.braavos.invoices.repo.functions.RepositoryFindOne;
-import com.mercadolibre.braavos.invoices.repo.functions.RepositoryUpdate;
+import com.mercadolibre.braavos.invoices.api.Paginated;
+import com.mercadolibre.braavos.invoices.repo.ops.RepositoryFind;
+import com.mercadolibre.braavos.invoices.repo.ops.RepositoryFindOne;
+import com.mercadolibre.braavos.invoices.repo.ops.RepositoryUpdate;
 import com.mongodb.MongoClient;
 import com.mongodb.client.model.IndexOptions;
 import io.vavr.collection.HashMap;
@@ -22,6 +23,9 @@ import org.bson.Document;
 import org.mongojack.JacksonMongoCollection;
 
 import java.time.Instant;
+
+import static io.vavr.API.Left;
+import static io.vavr.API.Right;
 
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class InvoiceRepository extends Repository<Invoice> {
@@ -67,5 +71,22 @@ public class InvoiceRepository extends Repository<Invoice> {
                 true,
                 false);
         return Try.of(repo :: findAndModify).toEither();
+    }
+
+    public Either<Throwable, Paginated<Invoice>> findByPaginated(ParametersRepository parameters) {
+        return findBy(parameters).flatMap(l -> count(parameters).map(c -> new Paginated<>(l, parameters.offset(), parameters.limit(), c)));
+    }
+
+    public Either<Throwable, List<Invoice>> findBy(ParametersRepository parameters) {
+        RepositoryFind<Invoice> repo = () -> collection.find(new Document(parameters.toMapForRepo().toJavaMap())).skip(parameters.offset() * parameters.limit()).limit(parameters.limit());
+        return Try.of(repo :: find).toEither().map(List::ofAll);
+    }
+
+    Either<Throwable, Long> count(ParametersRepository parameters) {
+        try {
+            return Right(collection.getCount(new Document(parameters.toMapForRepo().toJavaMap())));
+        } catch (Exception ex) {
+            return Left(ex);
+        }
     }
 }

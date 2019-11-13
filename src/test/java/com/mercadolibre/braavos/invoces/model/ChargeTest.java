@@ -4,7 +4,7 @@ import com.mercadolibre.braavos.invoices.CurrencyType;
 import com.mercadolibre.braavos.invoices.Invoice;
 import com.mercadolibre.braavos.invoices.charges.Charge;
 import com.mercadolibre.braavos.invoices.payments.model.Payment;
-import com.mercadolibre.braavos.invoices.payments.PaymentApi;
+import com.mercadolibre.braavos.invoices.payments.PaymentInputApi;
 import com.mercadolibre.braavos.invoices.payments.model.PaymentHelper;
 import io.vavr.collection.List;
 import io.vavr.control.Option;
@@ -51,7 +51,7 @@ public class ChargeTest {
 
     @Test
     public void debtGreaterThanPaymentAmount() {
-        PaymentApi paymentApi = PaymentApi
+        PaymentInputApi paymentInputApi = PaymentInputApi
                 .builder()
                 .userId("facundo.leonardelli")
                 .currency("ARS")
@@ -75,13 +75,13 @@ public class ChargeTest {
                 .version(1L)
                 .build();
 
-         val res = invoice.addPayment(new PaymentHelper(paymentApi.getUserId(), CurrencyType.ARS, paymentApi.getAmount(), Option.none()));
+         val res = invoice.addPayment(new PaymentHelper(paymentInputApi.getUserId(), CurrencyType.ARS, paymentInputApi.getAmount(), Option.none()));
          assert res.isRight();
     }
 
     @Test
     public void paymentAmountExceedsAmountCharges() {
-        PaymentApi paymentApi = PaymentApi
+        PaymentInputApi paymentInputApi = PaymentInputApi
                 .builder()
                 .userId("facundo.leonardelli")
                 .currency("ARS")
@@ -116,13 +116,13 @@ public class ChargeTest {
                 .version(1L)
                 .build();
 
-        val res = invoice.addPayment(new PaymentHelper(paymentApi.getUserId(), CurrencyType.ARS, paymentApi.getAmount(), Option.none()));
+        val res = invoice.addPayment(new PaymentHelper(paymentInputApi.getUserId(), CurrencyType.ARS, paymentInputApi.getAmount(), Option.none()));
         assert res.isLeft();
     }
 
     @Test
     public void paymentAmountEqualsAmountCharges() {
-        PaymentApi paymentApi = PaymentApi
+        PaymentInputApi paymentInputApi = PaymentInputApi
                 .builder()
                 .userId("facundo.leonardelli")
                 .currency("ARS")
@@ -157,13 +157,13 @@ public class ChargeTest {
                 .version(1L)
                 .build();
 
-        val res = invoice.addPayment(new PaymentHelper(paymentApi.getUserId(), CurrencyType.ARS, paymentApi.getAmount(), Option.none()));
+        val res = invoice.addPayment(new PaymentHelper(paymentInputApi.getUserId(), CurrencyType.ARS, paymentInputApi.getAmount(), Option.none()));
         assert res.isRight();
     }
 
     @Test
     public void amountChargesExceedsAmountPayment() {
-        PaymentApi paymentApi = PaymentApi
+        PaymentInputApi paymentInputApi = PaymentInputApi
                 .builder()
                 .userId("facundo.leonardelli")
                 .currency("ARS")
@@ -196,13 +196,13 @@ public class ChargeTest {
                 .version(1L)
                 .build();
 
-        val res = invoice.addPayment(new PaymentHelper(paymentApi.getUserId(), CurrencyType.ARS, paymentApi.getAmount(), Option.none()));
+        val res = invoice.addPayment(new PaymentHelper(paymentInputApi.getUserId(), CurrencyType.ARS, paymentInputApi.getAmount(), Option.none()));
         assert res.isRight();
     }
 
     @Test
     public void amountTotalPaymentEqualsAmountCharges() {
-        PaymentApi paymentApi = PaymentApi
+        PaymentInputApi paymentInputApi = PaymentInputApi
                 .builder()
                 .userId("facundo.leonardelli")
                 .currency("ARS")
@@ -246,13 +246,13 @@ public class ChargeTest {
                 .version(1L)
                 .build();
 
-        val res = invoice.addPayment(new PaymentHelper(paymentApi.getUserId(), CurrencyType.ARS, paymentApi.getAmount(), Option.none()));
+        val res = invoice.addPayment(new PaymentHelper(paymentInputApi.getUserId(), CurrencyType.ARS, paymentInputApi.getAmount(), Option.none()));
         assert res.isRight();
     }
 
     @Test
     public void amountChargesPaymentExceedsAmountTotal() {
-        PaymentApi paymentApi = PaymentApi
+        PaymentInputApi paymentInputApi = PaymentInputApi
                 .builder()
                 .userId("facundo.leonardelli")
                 .currency("ARS")
@@ -296,7 +296,7 @@ public class ChargeTest {
                 .version(1L)
                 .build();
 
-        val res = invoice.addPayment(new PaymentHelper(paymentApi.getUserId(), CurrencyType.ARS, paymentApi.getAmount(), Option.none()));
+        val res = invoice.addPayment(new PaymentHelper(paymentInputApi.getUserId(), CurrencyType.ARS, paymentInputApi.getAmount(), Option.none()));
         assert res.isRight();
     }
 }
