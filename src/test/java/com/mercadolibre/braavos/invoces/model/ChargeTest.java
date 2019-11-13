@@ -17,10 +17,37 @@ import java.time.Instant;
 import java.time.LocalDate;
 
 import static io.vavr.control.Option.none;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasProperty;
 
-public class ChargeModelTest {
+public class ChargeTest {
 
-    private static Logger logger = LoggerFactory.getLogger(ChargeModelTest.class);
+    private static Logger logger = LoggerFactory.getLogger(ChargeTest.class);
+
+    @Test
+    public void checkChargeProperties() {
+        Charge charge = Charge
+                .builder()
+                .eventId("")
+                .eventType("")
+                .amount(0d)
+                .currency("")
+                .processedDate(Instant.now())
+                .date(Instant.now())
+                .conversionFactor(Option.none())
+                .payments(List.empty())
+                .build();
+
+        assertThat(charge, hasProperty("eventId"));
+        assertThat(charge, hasProperty("eventType"));
+        assertThat(charge, hasProperty("amount"));
+        assertThat(charge, hasProperty("currency"));
+        assertThat(charge, hasProperty("processedDate"));
+        assertThat(charge, hasProperty("date"));
+        assertThat(charge, hasProperty("conversionFactor"));
+        assertThat(charge, hasProperty("processedDate"));
+        assertThat(charge, hasProperty("payments"));
+    }
 
     @Test
     public void debtGreaterThanPaymentAmount() {
