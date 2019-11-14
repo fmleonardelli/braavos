@@ -15,7 +15,7 @@ import java.util.UUID;
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PUBLIC)
 public class PaymentHelper {
-    String generateId = Instant.now().toString() + UUID.randomUUID();
+    String generateId = UUID.randomUUID().toString();
     String userId;
     CurrencyType currencyType;
     Double amount;

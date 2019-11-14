@@ -1,6 +1,6 @@
 package com.mercadolibre.braavos.invoices.repo;
 
-import com.mercadolibre.braavos.invoices.api.InvoiceParametersApi;
+import com.mercadolibre.braavos.invoices.api.InvoiceParametersForSummaryApi;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
 import io.vavr.control.Option;
@@ -11,19 +11,20 @@ import static io.vavr.API.Tuple;
 
 @Value
 @AllArgsConstructor
-public class InvoiceParametersRepository implements ParametersRepository {
+public class InvoiceParametersForSummaryRepository implements ParametersRepository {
+    InvoiceParametersForSummaryApi parametersApi;
 
-    InvoiceParametersApi parametersApi;
     public Option<Integer> limitParam() {
-        return parametersApi.getLimit();
+        return Option.none();
     }
+
     public Option<Integer> offsetParam() {
-        return parametersApi.getOffset();
+        return Option.none();
     }
 
     public Map<String, Object> toMapForRepo() {
         return List.of(
-                parametersApi.getUserId().map(u -> Tuple("userId", u)),
+                Option.of(Tuple("userId", parametersApi.getUserId())),
                 filterByDates(parametersApi.periodFromDate(), parametersApi.periodToDate())
         ).flatMap(x -> x.map(r -> r)).toMap(x -> x);
     }

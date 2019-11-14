@@ -9,6 +9,7 @@ import com.mercadolibre.braavos.invoices.kafka.EventNotification;
 import com.mercadolibre.braavos.invoices.payments.model.PaymentHelper;
 import io.vavr.Function1;
 import io.vavr.Tuple2;
+import io.vavr.Tuple3;
 import io.vavr.collection.List;
 import io.vavr.control.Either;
 import lombok.*;
@@ -45,17 +46,10 @@ public class Invoice implements InvoiceValidator {
         return Either.left(new ValidationError("The charge already exists: " + charge.getEventId()));
     }
 
-    public Either<Throwable, Invoice> addPayment(PaymentHelper paymentHelper) {
+    public Tuple2<Double, Invoice> addPayment(PaymentHelper paymentHelper) {
         val chargesPending = charges.filter(c -> c.status().equals(ChargeState.PENDING.getDescription())).sortBy(Charge::getDate);
         val chargesExcluded = charges.filter(c -> !c.status().equals(ChargeState.PENDING.getDescription()));
         val chargesNew = distributePayment(paymentHelper.getEffectiveAmount(), chargesPending, List.empty(), paymentHelper);
-        return chargesNew.map(c -> toBuilder().charges(chargesExcluded.appendAll(c)).build());
-    }
-
-    public Tuple2<Double, Invoice> addPaymentV2(PaymentHelper paymentHelper) {
-        val chargesPending = charges.filter(c -> c.status().equals(ChargeState.PENDING.getDescription())).sortBy(Charge::getDate);
-        val chargesExcluded = charges.filter(c -> !c.status().equals(ChargeState.PENDING.getDescription()));
-        val chargesNew = distributePaymentV2(paymentHelper.getEffectiveAmount(), chargesPending, List.empty(), paymentHelper);
         //Appends the charge excluded with the news
         return chargesNew.map((a, c) -> Tuple(a, toBuilder().charges(chargesExcluded.appendAll(c)).build()));
     }
@@ -68,49 +62,13 @@ public class Invoice implements InvoiceValidator {
      * @param paymentHelper
      * @return
      */
-    Tuple2<Double, List<Charge>> distributePaymentV2(Double amount, List<Charge> charges, List<Charge> resultingCharges, PaymentHelper paymentHelper) {
-        //The amount was distributed in the charge/s
-        if (Double.compare(amount, 0d) == 0) return Tuple(amount, resultingCharges.appendAll(charges));
-        else {
-            //the payment amount was distributed in all charges
-            if (charges.isEmpty()) return Tuple(amount, resultingCharges.appendAll(charges));
-            else return buildChargeWithPaymentV2(amount, charges, resultingCharges, paymentHelper);
-        }
+    Tuple2<Double, List<Charge>> distributePayment(Double amount, List<Charge> charges, List<Charge> resultingCharges, PaymentHelper paymentHelper) {
+        //The amount was distributed in the charge/s or the payment amount was distributed in all charges
+        if (Double.compare(amount, 0d) == 0 || charges.isEmpty()) return Tuple(amount, resultingCharges.appendAll(charges));
+        else return buildChargeWithPayment(amount, charges, resultingCharges, paymentHelper);
     }
 
-    Tuple2<Double, List<Charge>> buildChargeWithPaymentV2(Double amount, List<Charge> charges, List<Charge> resultingCharges, PaymentHelper paymentHelper) {
-        val differenceToCompleteCharge = charges.head().differenceToComplete();
-        //The payment amount is greater than the amount of the remaining charge
-        if (Double.compare(amount, differenceToCompleteCharge) == 1) {
-            val chargeWithPayment = charges.head().addPayment(differenceToCompleteCharge, paymentHelper);
-            return distributePaymentV2(amount - differenceToCompleteCharge, charges.tail(), resultingCharges.append(chargeWithPayment), paymentHelper);
-        } else {
-            //The amount of the charge is greater than that of the payment
-            val chargeWithPayment = charges.head().addPayment(amount, paymentHelper);
-            //The payment amount was consumed by the charge
-            return distributePaymentV2(0d, charges.tail(), resultingCharges.append(chargeWithPayment), paymentHelper);
-        }
-    }
-
-    /**
-     * This method, with buildChargeWithPayment are recursive methods for distribute the payment in the existing charges
-     * @param amount: value in the currency default
-     * @param charges: the list of debt charges
-     * @param resultingCharges: the list of paid charges
-     * @param paymentHelper
-     * @return
-     */
-    Either<Throwable, List<Charge>> distributePayment(Double amount, List<Charge> charges, List<Charge> resultingCharges, PaymentHelper paymentHelper) {
-        //The amount was distributed in the charge/s
-        if (Double.compare(amount, 0d) == 0) return Either.right(resultingCharges.appendAll(charges));
-        else {
-            //the payment amount was distributed in all charges
-            if (charges.isEmpty()) return Either.left(new ValidationError("The payment amount exceeds the debt"));
-            else return buildChargeWithPayment(amount, charges, resultingCharges, paymentHelper);
-        }
-    }
-
-    Either<Throwable, List<Charge>> buildChargeWithPayment(Double amount, List<Charge> charges, List<Charge> resultingCharges, PaymentHelper paymentHelper) {
+    Tuple2<Double, List<Charge>> buildChargeWithPayment(Double amount, List<Charge> charges, List<Charge> resultingCharges, PaymentHelper paymentHelper) {
         val differenceToCompleteCharge = charges.head().differenceToComplete();
         //The payment amount is greater than the amount of the remaining charge
         if (Double.compare(amount, differenceToCompleteCharge) == 1) {
@@ -122,6 +80,19 @@ public class Invoice implements InvoiceValidator {
             //The payment amount was consumed by the charge
             return distributePayment(0d, charges.tail(), resultingCharges.append(chargeWithPayment), paymentHelper);
         }
+    }
+
+    /**
+     * @return Tuple composed of sum of charges, sum of payments and difference between total charges and payments
+     */
+
+    public Tuple3<Double, Double, Double> getSummary() {
+        return charges
+                .foldLeft(Tuple(0d, 0d, 0d),
+                        (seed, elem) -> Tuple(
+                                seed._1 + elem.totalCharge(),
+                                seed._2 + elem.totalPayments(),
+                                seed._3 + elem.differenceToComplete()));
     }
 
     @JsonIgnore

@@ -17,7 +17,6 @@ public class PaymentController {
     @Autowired
     InvoiceService invoiceService;
 
-    @Deprecated
     @PostMapping("payments/v1")
     public ResponseEntity create(@RequestBody PaymentInputApi payment) throws Throwable {
         val res = invoiceService.addPayment(payment);

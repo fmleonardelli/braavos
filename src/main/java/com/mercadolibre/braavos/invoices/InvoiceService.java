@@ -1,14 +1,13 @@
 package com.mercadolibre.braavos.invoices;
 
-import com.mercadolibre.braavos.invoices.api.InvoiceApi;
-import com.mercadolibre.braavos.invoices.api.InvoiceParametersApi;
-import com.mercadolibre.braavos.invoices.api.Paginated;
+import com.mercadolibre.braavos.invoices.api.*;
 import com.mercadolibre.braavos.invoices.api.error.ValidationError;
 import com.mercadolibre.braavos.invoices.charges.Charge;
 import com.mercadolibre.braavos.invoices.charges.ChargeState;
 import com.mercadolibre.braavos.invoices.kafka.EventNotification;
 import com.mercadolibre.braavos.invoices.payments.PaymentInputApi;
 import com.mercadolibre.braavos.invoices.payments.model.PaymentHelper;
+import com.mercadolibre.braavos.invoices.repo.InvoiceParametersForSummaryRepository;
 import com.mercadolibre.braavos.invoices.repo.InvoiceParametersRepository;
 import com.mercadolibre.braavos.invoices.repo.InvoiceRepository;
 import io.reactivex.Single;
@@ -56,12 +55,26 @@ public class InvoiceService {
         return repository.findByPaginated(parametersRepository).map(r -> new Paginated<>(r.getItems().map(c -> InvoiceApi.map().apply(c)), r.getOffset(), r.getLimit(), r.getTotal()));
     }
 
-    @Deprecated
-    public Either<Throwable, Invoice> addPayment(PaymentInputApi payment) {
-        return generatePaymentV2(payment);
+    public Either<Throwable, InvoicesSummaryApi> findInvoicesSummary(InvoiceParametersForSummaryApi parametersApi) {
+        val parameters = new InvoiceParametersForSummaryRepository(parametersApi);
+        val invoices = repository.findBy(parameters);
+        //For each invoice the summary is calculated
+        val summary = invoices.map(i -> i.map(Invoice::getSummary));
+        //Sum of summaries
+        val total = summary.map(s -> s.foldLeft(
+                Tuple(0d, 0d, 0d),
+                (seed, elem) ->  Tuple(
+                        seed._1 + elem._1,
+                        seed._2 + elem._2,
+                        seed._3 + elem._3)));
+        return total.map(t -> new InvoicesSummaryApi(parametersApi.getUserId(), t._1, t._2, t._3));
     }
 
-    public Single<Invoice> addPaymentReactive(PaymentInputApi paymentInputApi) {
+    public Either<Throwable, Boolean> addPayment(PaymentInputApi payment) {
+        return generatePayment(payment);
+    }
+
+    public Single<Boolean> addPaymentReactive(PaymentInputApi paymentInputApi) {
         return Single.create(singleSubscriber -> {
             val newInvoice = generatePayment(paymentInputApi);
             if (newInvoice.isRight()) {
@@ -72,53 +85,34 @@ public class InvoiceService {
         });
     }
 
+    Either<Throwable, Boolean> generatePayment(PaymentInputApi paymentInputApi) {
+        //Search the invoice that has a pending charge for the user
+        val invoicesSearched = repository.getInvoicesByUserIdAndChargesState(paymentInputApi.getUserId(), ChargeState.PENDING.getDescription());
+        //if not found, a left is created
+        val invoiceFound = invoicesSearched.flatMap(i -> i.toEither(new Throwable("Invoice with debt for the user: " + paymentInputApi.getUserId() + " was not found")));
+        //Check the payment currency
+        val currencyType = invoiceFound.flatMap(i -> i.checkCurrency(paymentInputApi.getCurrency()));
+        //Find the conversion factor
+        val conversionFactor = currencyType.flatMap(c -> invoiceQuotationResolve.getQuotationByTypeAndDate(c, Instant.now()));
+        //Build a helper with necessary payment data
+        val paymentHelper = conversionFactor.flatMap(c -> currencyType.map(t -> PaymentHelper.builder().userId(paymentInputApi.getUserId()).amount(paymentInputApi.getAmount()).currencyType(t).conversionFactor(c).build()));
+        //Add the payment to invoice
+        val res = invoicesSearched.flatMap(i -> paymentHelper.flatMap(p -> distributePaymentInInvoices(paymentInputApi.getAmount(), i, List.empty(), p)));
+        //Update the invoice
+        return res.flatMap(r -> repository.updateMany(r));
+    }
+
     Either<Throwable, List<Invoice>> distributePaymentInInvoices(Double amount, List<Invoice> invoices, List<Invoice> invoicesResulting, PaymentHelper paymentHelper) {
         if (Double.compare(amount, 0d) == 0) {
-            return Right(invoicesResulting.appendAll(invoices));
+            return Right(invoicesResulting);
         } else {
             if (invoices.isEmpty()) {
                 return Left(new ValidationError("The payment amount exceeds the debt"));
             } else {
-                val res = invoices.head().addPaymentV2(paymentHelper);
+                val res = invoices.head().addPayment(paymentHelper);
                 val newPaymentHelper = paymentHelper.withAmountAndCurrencyType(res._1, CurrencyType.ARS, Option.none());
                 return distributePaymentInInvoices(res._1, invoices.tail(), invoicesResulting.append(res._2), newPaymentHelper);
             }
         }
-    }
-
-    Either<Throwable, Invoice> generatePaymentV2(PaymentInputApi paymentInputApi) {
-        //Search the invoice that has a pending charge for the user
-        val invoiceSearched = repository.getInvoicesByUserIdAndChargesStateV2(paymentInputApi.getUserId(), ChargeState.PENDING.getDescription());
-        //if not found, a left is created
-        val invoiceFound = invoiceSearched.flatMap(i -> i.toEither(new Throwable("Invoice with debt for the user: " + paymentInputApi.getUserId() + " was not found")));
-        //Check the payment currency
-        val currencyType = invoiceFound.flatMap(i -> i.checkCurrency(paymentInputApi.getCurrency()));
-        //Find the conversion factor
-        val conversionFactor = currencyType.flatMap(c -> invoiceQuotationResolve.getQuotationByTypeAndDate(c, Instant.now()));
-        //Build a helper with necessary payment data
-        val paymentHelper = conversionFactor.flatMap(c -> currencyType.map(t -> PaymentHelper.builder().userId(paymentInputApi.getUserId()).amount(paymentInputApi.getAmount()).currencyType(t).conversionFactor(c).build()));
-        //Add the payment to invoice
-        val res = invoiceSearched.flatMap(i -> paymentHelper.flatMap(p -> distributePaymentInInvoices(paymentInputApi.getAmount(), i, List.empty(), p)));
-        //Update the invoice
-        val upd = res.flatMap(r -> repository.updateMany(r));
-
-        return Left(new RuntimeException("hola"));
-    }
-
-    Either<Throwable, Invoice> generatePayment(PaymentInputApi paymentInputApi) {
-        //Search the invoice that has a pending charge for the user
-        val invoiceSearched = repository.getInvoicesByUserIdAndChargesState(paymentInputApi.getUserId(), ChargeState.PENDING.getDescription());
-        //if not found, a left is created
-        val invoiceFound = invoiceSearched.flatMap(i -> i.toEither(new Throwable("Invoice with debt for the user: " + paymentInputApi.getUserId() + " was not found")));
-        //Check the payment currency
-        val currencyType = invoiceFound.flatMap(i -> i.checkCurrency(paymentInputApi.getCurrency()));
-        //Find the conversion factor
-        val conversionFactor = currencyType.flatMap(c -> invoiceQuotationResolve.getQuotationByTypeAndDate(c, Instant.now()));
-        //Build a helper with necessary payment data
-        val paymentHelper = conversionFactor.flatMap(c -> currencyType.map(t -> PaymentHelper.builder().userId(paymentInputApi.getUserId()).amount(paymentInputApi.getAmount()).currencyType(t).conversionFactor(c).build()));
-        //Add the payment to invoice
-        val invoiceWithPayment = invoiceFound.flatMap(i -> paymentHelper.flatMap(i::addPayment));
-        //Update the invoice
-        return invoiceWithPayment.flatMap(i -> repository.update(i));
     }
 }

@@ -12,7 +12,6 @@ import com.mongodb.client.model.IndexOptions;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
-import io.vavr.collection.Traversable;
 import io.vavr.control.Either;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
@@ -50,14 +49,7 @@ public class InvoiceRepository extends Repository<Invoice> {
         return Try.of(repo ::findOne).toEither().map(Option::of);
     }
 
-    public Either<Throwable, Option<Invoice>> getInvoicesByUserIdAndChargesState(String userId, String chargeState) {
-        val elemMatch = new Document("$elemMatch", new Document("status", chargeState));
-        Map<String, Object> query = HashMap.of("userId", userId, "charges", elemMatch);
-        RepositoryFind<Invoice> repo = () -> collection.find(new Document(query.toJavaMap())).sort(new Document("periodDate", 1)).limit(1);
-        return Try.of(repo :: find).toEither().map(List::ofAll).map(Traversable::singleOption);
-    }
-
-    public Either<Throwable, List<Invoice>> getInvoicesByUserIdAndChargesStateV2(String userId, String chargeState) {
+    public Either<Throwable, List<Invoice>> getInvoicesByUserIdAndChargesState(String userId, String chargeState) {
         val elemMatch = new Document("$elemMatch", new Document("status", chargeState));
         Map<String, Object> query = HashMap.of("userId", userId, "charges", elemMatch);
         RepositoryFind<Invoice> repo = () -> collection.find(new Document(query.toJavaMap())).sort(new Document("periodDate", 1));
@@ -80,12 +72,9 @@ public class InvoiceRepository extends Repository<Invoice> {
         return Try.of(repo :: findAndModify).toEither();
     }
 
-    public Either<Throwable, Invoice> updateMany(List<Invoice> invoices) {
-
-        val document = JacksonMongoCollection.convertToDocument(invoices, this.objectMapper, Invoice.class);
-        collection.updateMany(new Document(), document);
-
-        return Left(new RuntimeException("hola"));
+    public Either<Throwable, Boolean> updateMany(List<Invoice> invoices) {
+         Either<Throwable, Boolean> init = Right(true);
+         return invoices.foldLeft(init, (seed, elem) ->  seed.flatMap(s -> update(elem).map(r -> true)));
     }
 
     public Either<Throwable, Paginated<Invoice>> findByPaginated(ParametersRepository parameters) {
