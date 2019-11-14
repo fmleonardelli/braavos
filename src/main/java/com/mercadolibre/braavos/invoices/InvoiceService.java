@@ -1,9 +1,9 @@
 package com.mercadolibre.braavos.invoices;
 
-import com.mercadolibre.braavos.invoices.api.InvoiceParametersApi;
-import com.mercadolibre.braavos.invoices.api.error.DataNotFound;
 import com.mercadolibre.braavos.invoices.api.InvoiceApi;
+import com.mercadolibre.braavos.invoices.api.InvoiceParametersApi;
 import com.mercadolibre.braavos.invoices.api.Paginated;
+import com.mercadolibre.braavos.invoices.api.error.ValidationError;
 import com.mercadolibre.braavos.invoices.charges.Charge;
 import com.mercadolibre.braavos.invoices.charges.ChargeState;
 import com.mercadolibre.braavos.invoices.kafka.EventNotification;
@@ -11,8 +11,10 @@ import com.mercadolibre.braavos.invoices.payments.PaymentInputApi;
 import com.mercadolibre.braavos.invoices.payments.model.PaymentHelper;
 import com.mercadolibre.braavos.invoices.repo.InvoiceParametersRepository;
 import com.mercadolibre.braavos.invoices.repo.InvoiceRepository;
+import io.reactivex.Single;
 import io.vavr.collection.List;
 import io.vavr.control.Either;
+import io.vavr.control.Option;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -21,6 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+
+import static io.vavr.API.*;
 
 @Service
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -38,28 +42,83 @@ public class InvoiceService {
         //if the invoice does not exist it is created
         val invoice = invoiceSearched.map(i -> i.getOrElse(Invoice.map().apply(event)));
         //Search the currency type
-        val currencyType = List.of(CurrencyType.values()).find(c -> c.getIdentifier().equals(event.getCurrency())).toEither(new RuntimeException("The currencyType is invalid: " + event.getCurrency())).get();
+        val currencyType = invoice.flatMap(i -> i.checkCurrency(event.getCurrency()));
         //Search the conversionFactor
-        val conversionFactor = invoiceQuotationResolve.getQuotationByTypeAndDate(currencyType, event.getDate());
+        val conversionFactor = currencyType.flatMap(c -> invoiceQuotationResolve.getQuotationByTypeAndDate(c, event.getDate()));
         //Add the charge in invoice
         val invoiceWithCharge = invoice.flatMap(i -> conversionFactor.flatMap(c -> i.addCharge(Charge.map().apply(event, c))));
-
         //Save the invoice
         return invoiceWithCharge.flatMap(i -> i.isNew() ? repository.save(i) : repository.update(i));
-    }
-
-    public Either<Throwable, Invoice> addPayment(PaymentInputApi paymentInputApi) {
-        val invoiceSearched = repository.getInvoicesByUserIdAndChargesState(paymentInputApi.getUserId(), ChargeState.PENDING.getDescription());
-        val invoiceFound = invoiceSearched.flatMap(i -> i.toEither(new DataNotFound("Invoice with debt for the user: " + paymentInputApi.getUserId() + " was not found")));
-        val currencyType = List.of(CurrencyType.values()).find(t -> t.identifier.equals(paymentInputApi.getCurrency())).toEither(new Throwable("Type not supported: " + paymentInputApi.getCurrency()));
-        val conversionFactor = currencyType.flatMap(c -> invoiceQuotationResolve.getQuotationByTypeAndDate(c, Instant.now()));
-        val paymentHelper = conversionFactor.flatMap(c -> currencyType.map(t -> PaymentHelper.builder().userId(paymentInputApi.getUserId()).amount(paymentInputApi.getAmount()).currencyType(t).conversionFactor(c).build()));
-        val invoiceWithPayment = invoiceFound.flatMap(i -> paymentHelper.flatMap(i::addPayment));
-        return invoiceWithPayment.flatMap(i -> repository.update(i));
     }
 
     public Either<Throwable, Paginated<InvoiceApi>> findInvoices(InvoiceParametersApi parametersApi) {
         val parametersRepository = new InvoiceParametersRepository(parametersApi);
         return repository.findByPaginated(parametersRepository).map(r -> new Paginated<>(r.getItems().map(c -> InvoiceApi.map().apply(c)), r.getOffset(), r.getLimit(), r.getTotal()));
+    }
+
+    @Deprecated
+    public Either<Throwable, Invoice> addPayment(PaymentInputApi payment) {
+        return generatePaymentV2(payment);
+    }
+
+    public Single<Invoice> addPaymentReactive(PaymentInputApi paymentInputApi) {
+        return Single.create(singleSubscriber -> {
+            val newInvoice = generatePayment(paymentInputApi);
+            if (newInvoice.isRight()) {
+                singleSubscriber.onSuccess(newInvoice.get());
+            } else {
+                singleSubscriber.onError(newInvoice.getLeft());
+            }
+        });
+    }
+
+    Either<Throwable, List<Invoice>> distributePaymentInInvoices(Double amount, List<Invoice> invoices, List<Invoice> invoicesResulting, PaymentHelper paymentHelper) {
+        if (Double.compare(amount, 0d) == 0) {
+            return Right(invoicesResulting.appendAll(invoices));
+        } else {
+            if (invoices.isEmpty()) {
+                return Left(new ValidationError("The payment amount exceeds the debt"));
+            } else {
+                val res = invoices.head().addPaymentV2(paymentHelper);
+                val newPaymentHelper = paymentHelper.withAmountAndCurrencyType(res._1, CurrencyType.ARS, Option.none());
+                return distributePaymentInInvoices(res._1, invoices.tail(), invoicesResulting.append(res._2), newPaymentHelper);
+            }
+        }
+    }
+
+    Either<Throwable, Invoice> generatePaymentV2(PaymentInputApi paymentInputApi) {
+        //Search the invoice that has a pending charge for the user
+        val invoiceSearched = repository.getInvoicesByUserIdAndChargesStateV2(paymentInputApi.getUserId(), ChargeState.PENDING.getDescription());
+        //if not found, a left is created
+        val invoiceFound = invoiceSearched.flatMap(i -> i.toEither(new Throwable("Invoice with debt for the user: " + paymentInputApi.getUserId() + " was not found")));
+        //Check the payment currency
+        val currencyType = invoiceFound.flatMap(i -> i.checkCurrency(paymentInputApi.getCurrency()));
+        //Find the conversion factor
+        val conversionFactor = currencyType.flatMap(c -> invoiceQuotationResolve.getQuotationByTypeAndDate(c, Instant.now()));
+        //Build a helper with necessary payment data
+        val paymentHelper = conversionFactor.flatMap(c -> currencyType.map(t -> PaymentHelper.builder().userId(paymentInputApi.getUserId()).amount(paymentInputApi.getAmount()).currencyType(t).conversionFactor(c).build()));
+        //Add the payment to invoice
+        val res = invoiceSearched.flatMap(i -> paymentHelper.flatMap(p -> distributePaymentInInvoices(paymentInputApi.getAmount(), i, List.empty(), p)));
+        //Update the invoice
+        val upd = res.flatMap(r -> repository.updateMany(r));
+
+        return Left(new RuntimeException("hola"));
+    }
+
+    Either<Throwable, Invoice> generatePayment(PaymentInputApi paymentInputApi) {
+        //Search the invoice that has a pending charge for the user
+        val invoiceSearched = repository.getInvoicesByUserIdAndChargesState(paymentInputApi.getUserId(), ChargeState.PENDING.getDescription());
+        //if not found, a left is created
+        val invoiceFound = invoiceSearched.flatMap(i -> i.toEither(new Throwable("Invoice with debt for the user: " + paymentInputApi.getUserId() + " was not found")));
+        //Check the payment currency
+        val currencyType = invoiceFound.flatMap(i -> i.checkCurrency(paymentInputApi.getCurrency()));
+        //Find the conversion factor
+        val conversionFactor = currencyType.flatMap(c -> invoiceQuotationResolve.getQuotationByTypeAndDate(c, Instant.now()));
+        //Build a helper with necessary payment data
+        val paymentHelper = conversionFactor.flatMap(c -> currencyType.map(t -> PaymentHelper.builder().userId(paymentInputApi.getUserId()).amount(paymentInputApi.getAmount()).currencyType(t).conversionFactor(c).build()));
+        //Add the payment to invoice
+        val invoiceWithPayment = invoiceFound.flatMap(i -> paymentHelper.flatMap(i::addPayment));
+        //Update the invoice
+        return invoiceWithPayment.flatMap(i -> repository.update(i));
     }
 }

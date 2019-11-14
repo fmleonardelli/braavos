@@ -4,6 +4,8 @@ import com.mercadolibre.braavos.external.quotation.QuotationSource;
 import io.vavr.API;
 import io.vavr.control.Either;
 import io.vavr.control.Option;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -15,9 +17,11 @@ import static io.vavr.API.Left;
 import static io.vavr.API.Right;
 
 @Component
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class InvoiceQuotationResolve {
+
     @Autowired
-    private List<QuotationSource> quotationSources;
+    List<QuotationSource> quotationSources;
 
     public Either<Throwable, Option<ConversionFactor>> getQuotationByTypeAndDate(CurrencyType type, Instant date) {
         if (type.getIsDefault()) {
@@ -28,7 +32,7 @@ public class InvoiceQuotationResolve {
         }
     }
 
-    private Either<Throwable, ConversionFactor> execute(io.vavr.collection.List<QuotationSource> quotationStrategies, CurrencyType type, Instant date) {
+    Either<Throwable, ConversionFactor> execute(io.vavr.collection.List<QuotationSource> quotationStrategies, CurrencyType type, Instant date) {
         if (quotationStrategies.isEmpty()) {
             return Left(new RuntimeException("The quotation could not be obtained"));
         } else {

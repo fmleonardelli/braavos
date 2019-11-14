@@ -24,4 +24,12 @@ public class PaymentHelper {
     public Double getEffectiveAmount() {
         return conversionFactor.map(c -> c.getValue() * amount).getOrElse(amount);
     }
+
+    public PaymentHelper withAmountAndCurrencyType(Double amount, CurrencyType currencyType, Option<ConversionFactor> conversionFactor) {
+        return toBuilder()
+                .amount(amount)
+                .currencyType(currencyType)
+                .conversionFactor(conversionFactor)
+                .build();
+    }
 }
