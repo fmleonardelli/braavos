@@ -25,6 +25,8 @@ La utilización de lombok no está limitada solo por los features de generación
 Además, se utilizó una biblioteca llamada Vavr para agregar carácteristicas funcionales.
 **Ciertos features de esta biblioteca no son reconocidos por el IDE y los marca como error cuando no lo son; esta advertencia se tiene que tener en cuenta al momento de descargar el proyecto, ya que el mismo compila y funciona correctamente.**
 
+[Issues que se resolverán en la siguiente versión](https://github.com/fmleonardelli/braavos/issues)
+
 ### Ejecución
 Braavos es una aplicación desarrollada sobre el framework spring boot.
 
