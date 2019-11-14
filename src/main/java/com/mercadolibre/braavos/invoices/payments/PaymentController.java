@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 @RestController
 public class PaymentController {
 
@@ -18,7 +20,7 @@ public class PaymentController {
     InvoiceService invoiceService;
 
     @PostMapping("payments/v1")
-    public ResponseEntity create(@RequestBody PaymentInputApi payment) throws Throwable {
+    public ResponseEntity create(@Valid @RequestBody PaymentInputApi payment) throws Throwable {
         val res = invoiceService.addPayment(payment);
         if (res.isRight()) return new ResponseEntity<>(HttpStatus.ACCEPTED);
         else throw res.getLeft();
