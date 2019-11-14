@@ -1,5 +1,6 @@
 package com.mercadolibre.braavos.invoices.charges;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.mercadolibre.braavos.invoices.ConversionFactor;
 import com.mercadolibre.braavos.invoices.payments.PaymentApi;
 import io.vavr.Function1;
@@ -18,6 +19,7 @@ public class ChargeApi {
     String eventType;
     Double amount;
     String currency;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     Instant date;
     Option<ConversionFactor> conversionFactor;
     List<PaymentApi> payments;

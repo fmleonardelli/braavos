@@ -1,7 +1,14 @@
 package com.mercadolibre.braavos.invoices.repo;
 
+import io.vavr.Tuple2;
+import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
 import io.vavr.control.Option;
+import org.bson.Document;
+
+import java.time.Instant;
+
+import static io.vavr.API.Tuple;
 
 public interface ParametersRepository {
     Option<Integer> limitParam();
@@ -12,5 +19,23 @@ public interface ParametersRepository {
     }
     default Integer offset() {
         return offsetParam().getOrElse(0);
+    }
+
+    default Option<Tuple2<String, Object>> filterByDates(Option<Instant> from, Option<Instant> to) {
+        if (!from.isEmpty() && !to.isEmpty()) {
+            Map<String, Object> query = HashMap.of("$gte", from, "$lte", to);
+            return Option.of(Tuple("periodDate", new Document(query.toJavaMap())));
+        } else {
+            if (!from.isEmpty()) {
+                Map<String, Object> query = HashMap.of("$gte", from);
+                return Option.of(Tuple("periodDate", new Document(query.toJavaMap())));
+            } else {
+                if (!to.isEmpty()) {
+                    Map<String, Object> query = HashMap.of("$lte", to);
+                    return Option.of(Tuple("periodDate", new Document(query.toJavaMap())));
+                }
+            }
+        }
+        return Option.none();
     }
 }

@@ -15,7 +15,7 @@ import java.util.UUID;
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PUBLIC)
 public class PaymentHelper {
-    String generateId = Instant.now().toString() + UUID.randomUUID();
+    String generateId = UUID.randomUUID().toString();
     String userId;
     CurrencyType currencyType;
     Double amount;
@@ -23,5 +23,13 @@ public class PaymentHelper {
 
     public Double getEffectiveAmount() {
         return conversionFactor.map(c -> c.getValue() * amount).getOrElse(amount);
+    }
+
+    public PaymentHelper withAmountAndCurrencyType(Double amount, CurrencyType currencyType, Option<ConversionFactor> conversionFactor) {
+        return toBuilder()
+                .amount(amount)
+                .currencyType(currencyType)
+                .conversionFactor(conversionFactor)
+                .build();
     }
 }

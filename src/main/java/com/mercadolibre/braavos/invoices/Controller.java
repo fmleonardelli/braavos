@@ -1,8 +1,7 @@
 package com.mercadolibre.braavos.invoices;
 
-import com.mercadolibre.braavos.invoices.api.error.ApiError;
 import com.mercadolibre.braavos.invoices.api.Paginated;
-import com.mercadolibre.braavos.invoices.api.error.ValidationError;
+import com.mercadolibre.braavos.invoices.api.error.ApiError;
 import io.vavr.control.Either;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +22,7 @@ public interface Controller<T> {
     }
     default ResponseEntity<Object> handleLeft(Throwable error) {
         return Match(error).of(
-                Case($(instanceOf(ValidationError.class)),
+                Case($(instanceOf(Throwable.class)),
                         new ResponseEntity<>(new ApiError(HttpStatus.BAD_REQUEST.toString(), error.getMessage()), HttpStatus.BAD_REQUEST)),
                 Case($(),
                         new ResponseEntity<>(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR.toString(), error.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR)));

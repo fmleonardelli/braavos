@@ -1,5 +1,6 @@
 package com.mercadolibre.braavos.invoices.payments;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.mercadolibre.braavos.invoices.ConversionFactor;
 import com.mercadolibre.braavos.invoices.payments.model.Payment;
 import io.vavr.Function1;
@@ -8,9 +9,13 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 
+import java.time.Instant;
+
 @Value
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class PaymentApi {
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
+    Instant date;
     Double amountInCharge;
     String currency;
     Double originalAmount;
@@ -18,8 +23,9 @@ public class PaymentApi {
 
     public static Function1<Payment, PaymentApi> map() {
         return x -> new PaymentApi(
-            x.getAmount(),
-            x.getCurrency(),
+                x.getDate(),
+                x.getAmount(),
+                x.getCurrency(),
                 x.getOriginalAmount(),
                 x.getConversionFactor()
         );

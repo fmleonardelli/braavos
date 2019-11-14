@@ -64,4 +64,12 @@ public class Charge {
                 paymentHelper.getConversionFactor());
         return toBuilder().payments(payments.append(newPayment)).build();
     }
+
+    public Double totalCharge() {
+        return conversionFactor.map(c -> c.getValue() * amount).getOrElse(amount);
+    }
+
+    public Double totalPayments() {
+        return payments.foldLeft(0d, (seed, elem) -> seed + elem.getAmount());
+    }
 }
