@@ -78,7 +78,7 @@ public class InvoiceRepository extends Repository<Invoice> {
     }
 
     public Either<Throwable, Paginated<Invoice>> findByPaginated(ParametersRepository parameters) {
-        return findBy(parameters).flatMap(l -> count(parameters).map(c -> new Paginated<>(l, parameters.offset(), parameters.limit(), c)));
+        return findBy(parameters).flatMap(l -> count(parameters).map(c -> new Paginated<>(l, parameters.offset(), parameters.limit(), (c % parameters.limit() == 0) ? c / parameters.limit() : (c / parameters.limit()) + 1)));
     }
 
     public Either<Throwable, List<Invoice>> findBy(ParametersRepository parameters) {
