@@ -28,7 +28,7 @@ import static io.vavr.API.*;
 @Service
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class InvoiceService {
+public class InvoiceService implements InvoiceValidator {
 
     @Autowired
     InvoiceRepository repository;
@@ -88,10 +88,12 @@ public class InvoiceService {
     Either<Throwable, Boolean> generatePayment(PaymentInputApi paymentInputApi) {
         //Search the invoice that has a pending charge for the user
         val invoicesSearched = repository.getInvoicesByUserIdAndChargesState(paymentInputApi.getUserId(), ChargeState.PENDING.getDescription());
-        //if not found, a left is created
-        val invoiceFound = invoicesSearched.flatMap(i -> i.toEither(new Throwable("Invoice with debt for the user: " + paymentInputApi.getUserId() + " was not found")));
+        //if not found, a left is returned
+        val invoicesFound = invoicesSearched.flatMap(this::checkInvocesDebt);
+        //Chech te payment amount
+        val amountPayment = invoicesFound.flatMap(i -> this.checkAmount(paymentInputApi.getAmount()));
         //Check the payment currency
-        val currencyType = invoiceFound.flatMap(i -> i.checkCurrency(paymentInputApi.getCurrency()));
+        val currencyType = amountPayment.flatMap(i -> checkCurrency(paymentInputApi.getCurrency()));
         //Find the conversion factor
         val conversionFactor = currencyType.flatMap(c -> invoiceQuotationResolve.getQuotationByTypeAndDate(c, Instant.now()));
         //Build a helper with necessary payment data

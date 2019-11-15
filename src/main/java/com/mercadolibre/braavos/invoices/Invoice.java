@@ -85,7 +85,7 @@ public class Invoice implements InvoiceValidator {
     /**
      * @return Tuple composed of sum of charges, sum of payments and difference between total charges and payments
      */
-
+    @JsonIgnore
     public Tuple3<Double, Double, Double> getSummary() {
         return charges
                 .foldLeft(Tuple(0d, 0d, 0d),

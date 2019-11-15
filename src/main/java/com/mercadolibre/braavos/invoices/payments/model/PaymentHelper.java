@@ -1,14 +1,13 @@
 package com.mercadolibre.braavos.invoices.payments.model;
 
-import com.mercadolibre.braavos.invoices.CurrencyType;
 import com.mercadolibre.braavos.invoices.ConversionFactor;
+import com.mercadolibre.braavos.invoices.CurrencyType;
 import io.vavr.control.Option;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
 
-import java.time.Instant;
 import java.util.UUID;
 
 @Value

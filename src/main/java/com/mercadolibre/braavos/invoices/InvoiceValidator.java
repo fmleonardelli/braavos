@@ -1,9 +1,13 @@
 package com.mercadolibre.braavos.invoices;
 
+import com.mercadolibre.braavos.invoices.api.error.DataNotFound;
 import com.mercadolibre.braavos.invoices.api.error.ValidationError;
 import com.mercadolibre.braavos.invoices.charges.ChargeType;
 import io.vavr.collection.List;
 import io.vavr.control.Either;
+
+import static io.vavr.API.Left;
+import static io.vavr.API.Right;
 
 public interface InvoiceValidator {
     default Either<Throwable, Boolean> checkType(String type) {
@@ -22,5 +26,11 @@ public interface InvoiceValidator {
             return Either.left(new ValidationError("Invalid amount: " + amount));
         }
         return Either.right(true);
+    }
+    default Either<Throwable, List<Invoice>> checkInvocesDebt(List<Invoice> invoicesWithDebt) {
+        if (invoicesWithDebt.isEmpty()) {
+            return Left(new DataNotFound("Invoice with debt for the user was not found"));
+        }
+        return Right(invoicesWithDebt);
     }
 }
