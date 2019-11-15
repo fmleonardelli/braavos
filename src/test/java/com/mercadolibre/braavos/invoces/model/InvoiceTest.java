@@ -23,10 +23,10 @@ public class InvoiceTest {
     @Test
     public void checkInvoiceProperties() {
         val invoice = Invoice.builder()
-                .userId("")
+                .userId("facundo.leonardelli")
                 .periodDate(LocalDate.now())
                 .charges(List.empty())
-                .version(1L);
+                .version(1L).build();
 
         assertThat(invoice, hasProperty("userId"));
         assertThat(invoice, hasProperty("periodDate"));
@@ -123,11 +123,9 @@ public class InvoiceTest {
                 .charges(List.of(charge1))
                 .version(1L)
                 .build();
-/*
-        val res = invoice.addPayment(new PaymentHelper(paymentInputApi.getUserId(), CurrencyType.ARS, paymentInputApi.getAmount(), Option.none()));
-        assert res.isRight();
 
- */
+        val res = invoice.addPayment(new PaymentHelper(paymentInputApi.getUserId(), CurrencyType.ARS, paymentInputApi.getAmount(), Option.none()));
+        assert res._1 == 0d;
     }
 
     @Test
@@ -166,11 +164,9 @@ public class InvoiceTest {
                 .charges(List.of(charge1, charge2))
                 .version(1L)
                 .build();
-/*
-        val res = invoice.addPayment(new PaymentHelper(paymentInputApi.getUserId(), CurrencyType.ARS, paymentInputApi.getAmount(), Option.none()));
-        assert res.isLeft();
 
- */
+        val res = invoice.addPayment(new PaymentHelper(paymentInputApi.getUserId(), CurrencyType.ARS, paymentInputApi.getAmount(), Option.none()));
+        assert res._1 != 0d;
     }
 
     @Test
@@ -209,11 +205,9 @@ public class InvoiceTest {
                 .charges(List.of(charge1, charge2))
                 .version(1L)
                 .build();
-/*
-        val res = invoice.addPayment(new PaymentHelper(paymentInputApi.getUserId(), CurrencyType.ARS, paymentInputApi.getAmount(), Option.none()));
-        assert res.isRight();
 
- */
+        val res = invoice.addPayment(new PaymentHelper(paymentInputApi.getUserId(), CurrencyType.ARS, paymentInputApi.getAmount(), Option.none()));
+        assert res._1 == 0d;
     }
 
     @Test
@@ -250,11 +244,9 @@ public class InvoiceTest {
                 .charges(List.of(charge1))
                 .version(1L)
                 .build();
-        /*
-        val res = invoice.addPayment(new PaymentHelper(paymentInputApi.getUserId(), CurrencyType.ARS, paymentInputApi.getAmount(), Option.none()));
-        assert res.isRight();
 
-         */
+        val res = invoice.addPayment(new PaymentHelper(paymentInputApi.getUserId(), CurrencyType.ARS, paymentInputApi.getAmount(), Option.none()));
+        assert res._1 == 0d;
     }
 
     @Test
@@ -303,11 +295,9 @@ public class InvoiceTest {
                 .version(1L)
                 .build();
 
-        /*
-        val res = invoice.addPayment(new PaymentHelper(paymentInputApi.getUserId(), CurrencyType.ARS, paymentInputApi.getAmount(), Option.none()));
-        assert res.isRight();
 
-         */
+        val res = invoice.addPayment(new PaymentHelper(paymentInputApi.getUserId(), CurrencyType.ARS, paymentInputApi.getAmount(), Option.none()));
+        assert res._1 == 0d;
     }
 
     @Test
@@ -355,10 +345,7 @@ public class InvoiceTest {
                 .charges(List.of(charge1, charge2))
                 .version(1L)
                 .build();
-        /*
         val res = invoice.addPayment(new PaymentHelper(paymentInputApi.getUserId(), CurrencyType.ARS, paymentInputApi.getAmount(), Option.none()));
-        assert res.isRight();
-
-         */
+        assert res._1 == 0d;
     }
 }

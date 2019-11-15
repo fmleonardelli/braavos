@@ -27,7 +27,7 @@ public class PaymentController {
     }
 
     @PostMapping("payments")
-    public Single<ResponseEntity> createReactive(@RequestBody PaymentInputApi payment) throws Throwable {
+    public Single<ResponseEntity> createReactive(@Valid @RequestBody PaymentInputApi payment) throws Throwable {
         return invoiceService.addPaymentReactive(payment)
                 .subscribeOn(Schedulers.io())
                 .map(r -> new ResponseEntity(HttpStatus.ACCEPTED));
