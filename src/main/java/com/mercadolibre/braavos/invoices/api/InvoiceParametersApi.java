@@ -1,14 +1,10 @@
 package com.mercadolibre.braavos.invoices.api;
 
-import io.vavr.control.Either;
 import io.vavr.control.Option;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 
 import java.time.Instant;
-
-import static io.vavr.API.Left;
-import static io.vavr.API.Right;
 
 @Value
 @AllArgsConstructor

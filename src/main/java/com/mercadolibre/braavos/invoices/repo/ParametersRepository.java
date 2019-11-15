@@ -21,18 +21,18 @@ public interface ParametersRepository {
         return offsetParam().getOrElse(0);
     }
 
-    default Option<Tuple2<String, Object>> filterByDates(Option<Instant> from, Option<Instant> to) {
+    default Option<Tuple2<String, Object>> filterByDates(String field, Option<Instant> from, Option<Instant> to) {
         if (!from.isEmpty() && !to.isEmpty()) {
             Map<String, Object> query = HashMap.of("$gte", from, "$lte", to);
-            return Option.of(Tuple("periodDate", new Document(query.toJavaMap())));
+            return Option.of(Tuple(field, new Document(query.toJavaMap())));
         } else {
             if (!from.isEmpty()) {
                 Map<String, Object> query = HashMap.of("$gte", from);
-                return Option.of(Tuple("periodDate", new Document(query.toJavaMap())));
+                return Option.of(Tuple(field, new Document(query.toJavaMap())));
             } else {
                 if (!to.isEmpty()) {
                     Map<String, Object> query = HashMap.of("$lte", to);
-                    return Option.of(Tuple("periodDate", new Document(query.toJavaMap())));
+                    return Option.of(Tuple(field, new Document(query.toJavaMap())));
                 }
             }
         }

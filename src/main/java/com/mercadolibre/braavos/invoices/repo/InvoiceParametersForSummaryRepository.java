@@ -25,7 +25,7 @@ public class InvoiceParametersForSummaryRepository implements ParametersReposito
     public Map<String, Object> toMapForRepo() {
         return List.of(
                 Option.of(Tuple("userId", parametersApi.getUserId())),
-                filterByDates(parametersApi.periodFromDate(), parametersApi.periodToDate())
+                filterByDates("periodDate", parametersApi.periodFromDate(), parametersApi.periodToDate())
         ).flatMap(x -> x.map(r -> r)).toMap(x -> x);
     }
 }
