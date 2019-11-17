@@ -9,6 +9,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Value
@@ -16,9 +17,9 @@ import java.time.Instant;
 public class PaymentApi {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     Instant date;
-    Double amountInCharge;
+    BigDecimal amountInCharge;
     String currency;
-    Double originalAmount;
+    BigDecimal originalAmount;
     Option<ConversionFactor> conversionFactor;
 
     public static Function1<Payment, PaymentApi> map() {

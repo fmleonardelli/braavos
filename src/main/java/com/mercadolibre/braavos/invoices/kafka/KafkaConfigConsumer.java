@@ -26,6 +26,15 @@ public class KafkaConfigConsumer {
     @Value("${spring.kafka.consumer.group-id}")
     private String groupId;
 
+    @Value("${spring.kafka.properties.security.protocol}")
+    String protocol;
+
+    @Value("${spring.kafka.properties.sasl.mechanism}")
+    String mechanism;
+
+    @Value("${spring.kafka.properties.sasl.jaas.config}")
+    String jaasCfg;
+
     @Autowired
     ObjectMapper objectMapper;
 
@@ -34,6 +43,9 @@ public class KafkaConfigConsumer {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,  bootstrapServers);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        props.put("security.protocol", protocol);
+        props.put("sasl.mechanism", mechanism);
+        props.put("sasl.jaas.config", jaasCfg);
         return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new JsonDeserializer<>(EventNotification.class, objectMapper, false));
     }
 

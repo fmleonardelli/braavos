@@ -2,6 +2,7 @@ package com.mercadolibre.braavos.invoices.kafka;
 
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Value
@@ -12,5 +13,5 @@ public class EventNotification {
     String eventType;
     String eventId;
     String currency;
-    Double amount;
+    BigDecimal amount;
 }

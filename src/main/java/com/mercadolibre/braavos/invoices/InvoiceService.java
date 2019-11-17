@@ -21,6 +21,7 @@ import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 import static io.vavr.API.*;
@@ -62,11 +63,11 @@ public class InvoiceService implements InvoiceValidator {
         val summary = invoices.map(i -> i.map(Invoice::getSummary));
         //Sum of summaries
         val total = summary.map(s -> s.foldLeft(
-                Tuple(0d, 0d, 0d),
+                Tuple(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO),
                 (seed, elem) ->  Tuple(
-                        seed._1 + elem._1,
-                        seed._2 + elem._2,
-                        seed._3 + elem._3)));
+                        seed._1.add(elem._1),
+                        seed._2.add(elem._2),
+                        seed._3.add(elem._3))));
         return total.map(t -> new InvoicesSummaryApi(parametersApi.getUserId(), t._1, t._2, t._3));
     }
 
@@ -104,8 +105,8 @@ public class InvoiceService implements InvoiceValidator {
         return res.flatMap(r -> repository.updateMany(r));
     }
 
-    Either<Throwable, List<Invoice>> distributePaymentInInvoices(Double amount, List<Invoice> invoices, List<Invoice> invoicesResulting, PaymentHelper paymentHelper) {
-        if (Double.compare(amount, 0d) == 0) {
+    Either<Throwable, List<Invoice>> distributePaymentInInvoices(BigDecimal amount, List<Invoice> invoices, List<Invoice> invoicesResulting, PaymentHelper paymentHelper) {
+        if (amount.compareTo(BigDecimal.ZERO) == 0) {
             return Right(invoicesResulting);
         } else {
             if (invoices.isEmpty()) {

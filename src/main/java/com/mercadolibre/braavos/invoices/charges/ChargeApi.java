@@ -10,6 +10,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Value
@@ -17,7 +18,7 @@ import java.time.Instant;
 public class ChargeApi {
     String eventId;
     String eventType;
-    Double amount;
+    BigDecimal amount;
     String currency;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     Instant date;

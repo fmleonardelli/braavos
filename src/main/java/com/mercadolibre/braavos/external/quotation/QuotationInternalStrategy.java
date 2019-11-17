@@ -7,6 +7,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZoneId;
 
@@ -16,7 +17,7 @@ import static io.vavr.API.Right;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class QuotationInternalStrategy implements QuotationSource {
     public Either<Throwable, ConversionFactor> getQuotationByTypeAndDate(CurrencyType type, Instant date) {
-        return Right(new ConversionFactor(date.atZone(ZoneId.of("UTC")).toLocalDate(), 60.3 ));
+        return Right(new ConversionFactor(date.atZone(ZoneId.of("UTC")).toLocalDate(), new BigDecimal(60.3 )));
     }
     public Integer order() {
         return 1;

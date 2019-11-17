@@ -6,6 +6,8 @@ import com.mercadolibre.braavos.invoices.charges.ChargeType;
 import io.vavr.collection.List;
 import io.vavr.control.Either;
 
+import java.math.BigDecimal;
+
 import static io.vavr.API.Left;
 import static io.vavr.API.Right;
 
@@ -21,8 +23,8 @@ public interface InvoiceValidator {
                 .find(c -> c.getIdentifier().equals(currency))
                 .toEither(new ValidationError("The currencyType is invalid: " + currency));
     }
-    default Either<Throwable, Boolean> checkAmount(Double amount) {
-        if (Double.compare(amount, 0d) != 1) {
+    default Either<Throwable, Boolean> checkAmount(BigDecimal amount) {
+        if (!(amount.compareTo(BigDecimal.ZERO) > 0)) {
             return Either.left(new ValidationError("Invalid amount: " + amount));
         }
         return Either.right(true);

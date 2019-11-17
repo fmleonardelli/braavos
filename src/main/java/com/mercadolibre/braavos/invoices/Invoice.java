@@ -14,6 +14,7 @@ import io.vavr.collection.List;
 import io.vavr.control.Either;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -46,7 +47,7 @@ public class Invoice implements InvoiceValidator {
         return Either.left(new ValidationError("The charge already exists: " + charge.getEventId()));
     }
 
-    public Tuple2<Double, Invoice> addPayment(PaymentHelper paymentHelper) {
+    public Tuple2<BigDecimal, Invoice> addPayment(PaymentHelper paymentHelper) {
         val chargesPending = charges.filter(c -> c.status().equals(ChargeState.PENDING.getDescription())).sortBy(Charge::getDate);
         val chargesExcluded = charges.filter(c -> !c.status().equals(ChargeState.PENDING.getDescription()));
         val chargesNew = distributePayment(paymentHelper.getEffectiveAmount(), chargesPending, List.empty(), paymentHelper);
@@ -62,23 +63,23 @@ public class Invoice implements InvoiceValidator {
      * @param paymentHelper
      * @return
      */
-    Tuple2<Double, List<Charge>> distributePayment(Double amount, List<Charge> charges, List<Charge> resultingCharges, PaymentHelper paymentHelper) {
+    Tuple2<BigDecimal, List<Charge>> distributePayment(BigDecimal amount, List<Charge> charges, List<Charge> resultingCharges, PaymentHelper paymentHelper) {
         //The amount was distributed in the charge/s or the payment amount was distributed in all charges
-        if (Double.compare(amount, 0d) == 0 || charges.isEmpty()) return Tuple(amount, resultingCharges.appendAll(charges));
+        if (amount.compareTo(BigDecimal.ZERO) == 0 || charges.isEmpty()) return Tuple(amount, resultingCharges.appendAll(charges));
         else return buildChargeWithPayment(amount, charges, resultingCharges, paymentHelper);
     }
 
-    Tuple2<Double, List<Charge>> buildChargeWithPayment(Double amount, List<Charge> charges, List<Charge> resultingCharges, PaymentHelper paymentHelper) {
+    Tuple2<BigDecimal, List<Charge>> buildChargeWithPayment(BigDecimal amount, List<Charge> charges, List<Charge> resultingCharges, PaymentHelper paymentHelper) {
         val differenceToCompleteCharge = charges.head().differenceToComplete();
         //The payment amount is greater than the amount of the remaining charge
-        if (Double.compare(amount, differenceToCompleteCharge) == 1) {
+        if (amount.compareTo(differenceToCompleteCharge) == 1) {
             val chargeWithPayment = charges.head().addPayment(differenceToCompleteCharge, paymentHelper);
-            return distributePayment(amount - differenceToCompleteCharge, charges.tail(), resultingCharges.append(chargeWithPayment), paymentHelper);
+            return distributePayment(amount.subtract(differenceToCompleteCharge), charges.tail(), resultingCharges.append(chargeWithPayment), paymentHelper);
         } else {
             //The amount of the charge is greater than that of the payment
             val chargeWithPayment = charges.head().addPayment(amount, paymentHelper);
             //The payment amount was consumed by the charge
-            return distributePayment(0d, charges.tail(), resultingCharges.append(chargeWithPayment), paymentHelper);
+            return distributePayment(BigDecimal.ZERO, charges.tail(), resultingCharges.append(chargeWithPayment), paymentHelper);
         }
     }
 
@@ -86,13 +87,13 @@ public class Invoice implements InvoiceValidator {
      * @return Tuple composed of sum of charges, sum of payments and difference between total charges and payments
      */
     @JsonIgnore
-    public Tuple3<Double, Double, Double> getSummary() {
+    public Tuple3<BigDecimal, BigDecimal, BigDecimal> getSummary() {
         return charges
-                .foldLeft(Tuple(0d, 0d, 0d),
+                .foldLeft(Tuple(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO),
                         (seed, elem) -> Tuple(
-                                seed._1 + elem.totalCharge(),
-                                seed._2 + elem.totalPayments(),
-                                seed._3 + elem.differenceToComplete()));
+                                seed._1.add(elem.totalCharge()),
+                                seed._2.add(elem.totalPayments()),
+                                seed._3.add(elem.differenceToComplete())));
     }
 
     @JsonIgnore

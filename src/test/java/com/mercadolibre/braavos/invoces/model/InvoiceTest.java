@@ -11,6 +11,7 @@ import io.vavr.control.Option;
 import lombok.val;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
@@ -40,7 +41,7 @@ public class InvoiceTest {
                 .builder()
                 .eventId("1234")
                 .eventType("CLASIFICADO")
-                .amount(250d)
+                .amount(new BigDecimal(250))
                 .currency("ARS")
                 .processedDate(Instant.now())
                 .date(Instant.now())
@@ -51,7 +52,7 @@ public class InvoiceTest {
                 .builder()
                 .eventId("1234")
                 .eventType("CLASIFICADO")
-                .amount(250d)
+                .amount(new BigDecimal(250d))
                 .currency("ARS")
                 .processedDate(Instant.now())
                 .date(Instant.now())
@@ -72,7 +73,7 @@ public class InvoiceTest {
                 .builder()
                 .eventId("1234")
                 .eventType("CLASIFICADO")
-                .amount(250d)
+                .amount(new BigDecimal(250d))
                 .currency("ARS")
                 .processedDate(Instant.now())
                 .date(Instant.now())
@@ -83,7 +84,7 @@ public class InvoiceTest {
                 .builder()
                 .eventId("1234")
                 .eventType("VENTA")
-                .amount(250d)
+                .amount(new BigDecimal(250d))
                 .currency("ARS")
                 .processedDate(Instant.now())
                 .date(Instant.now())
@@ -104,12 +105,12 @@ public class InvoiceTest {
                 .builder()
                 .userId("facundo.leonardelli")
                 .currency("ARS")
-                .amount(48d).build();
+                .amount(new BigDecimal(48d)).build();
         Charge charge1 = Charge
                 .builder()
                 .eventId("1234")
                 .eventType("CLASIFICADO")
-                .amount(250d)
+                .amount(new BigDecimal(250d))
                 .currency("ARS")
                 .processedDate(Instant.now())
                 .date(Instant.now())
@@ -125,7 +126,7 @@ public class InvoiceTest {
                 .build();
 
         val res = invoice.addPayment(new PaymentHelper(paymentInputApi.getUserId(), CurrencyType.ARS, paymentInputApi.getAmount(), Option.none()));
-        assert res._1 == 0d;
+        assert res._1.compareTo(BigDecimal.ZERO) == 0;
     }
 
     @Test
@@ -134,12 +135,12 @@ public class InvoiceTest {
                 .builder()
                 .userId("facundo.leonardelli")
                 .currency("ARS")
-                .amount(270d).build();
+                .amount(new BigDecimal(270)).build();
         Charge charge1 = Charge
                 .builder()
                 .eventId("1234")
                 .eventType("CLASIFICADO")
-                .amount(130d)
+                .amount(new BigDecimal(130))
                 .currency("ARS")
                 .processedDate(Instant.now())
                 .date(Instant.now())
@@ -150,7 +151,7 @@ public class InvoiceTest {
                 .builder()
                 .eventId("123")
                 .eventType("CLASIFICADO")
-                .amount(130d)
+                .amount(new BigDecimal(130))
                 .currency("ARS")
                 .processedDate(Instant.now())
                 .date(Instant.now())
@@ -166,7 +167,7 @@ public class InvoiceTest {
                 .build();
 
         val res = invoice.addPayment(new PaymentHelper(paymentInputApi.getUserId(), CurrencyType.ARS, paymentInputApi.getAmount(), Option.none()));
-        assert res._1 != 0d;
+        assert res._1.compareTo(BigDecimal.ZERO) != 0;
     }
 
     @Test
@@ -175,12 +176,12 @@ public class InvoiceTest {
                 .builder()
                 .userId("facundo.leonardelli")
                 .currency("ARS")
-                .amount(250d).build();
+                .amount(new BigDecimal(250)).build();
         Charge charge1 = Charge
                 .builder()
                 .eventId("1")
                 .eventType("CLASIFICADO")
-                .amount(125d)
+                .amount(new BigDecimal(125))
                 .currency("ARS")
                 .processedDate(Instant.now())
                 .date(Instant.now())
@@ -191,7 +192,7 @@ public class InvoiceTest {
                 .builder()
                 .eventId("1234")
                 .eventType("CLASIFICADO")
-                .amount(125d)
+                .amount(new BigDecimal(125))
                 .currency("ARS")
                 .processedDate(Instant.now())
                 .date(Instant.now())
@@ -207,7 +208,7 @@ public class InvoiceTest {
                 .build();
 
         val res = invoice.addPayment(new PaymentHelper(paymentInputApi.getUserId(), CurrencyType.ARS, paymentInputApi.getAmount(), Option.none()));
-        assert res._1 == 0d;
+        assert res._1.compareTo(BigDecimal.ZERO) == 0;
     }
 
     @Test
@@ -216,11 +217,11 @@ public class InvoiceTest {
                 .builder()
                 .userId("facundo.leonardelli")
                 .currency("ARS")
-                .amount(250d).build();
+                .amount(new BigDecimal(250)).build();
 
         Payment payment = Payment
                 .builder()
-                .amount(25d)
+                .amount(new BigDecimal(25))
                 .currency("ARS")
                 .date(Instant.now())
                 .conversionFactor(none())
@@ -229,7 +230,7 @@ public class InvoiceTest {
                 .builder()
                 .eventId("1")
                 .eventType("CLASIFICADO")
-                .amount(300d)
+                .amount(new BigDecimal(300))
                 .currency("ARS")
                 .processedDate(Instant.now())
                 .date(Instant.now())
@@ -246,7 +247,7 @@ public class InvoiceTest {
                 .build();
 
         val res = invoice.addPayment(new PaymentHelper(paymentInputApi.getUserId(), CurrencyType.ARS, paymentInputApi.getAmount(), Option.none()));
-        assert res._1 == 0d;
+        assert res._1.compareTo(BigDecimal.ZERO) == 0;
     }
 
     @Test
@@ -255,11 +256,11 @@ public class InvoiceTest {
                 .builder()
                 .userId("facundo.leonardelli")
                 .currency("ARS")
-                .amount(250d).build();
+                .amount(new BigDecimal(250)).build();
 
         Payment payment = Payment
                 .builder()
-                .amount(250d)
+                .amount(new BigDecimal(250))
                 .currency("ARS")
                 .date(Instant.now())
                 .conversionFactor(none())
@@ -268,7 +269,7 @@ public class InvoiceTest {
                 .builder()
                 .eventId("1")
                 .eventType("CLASIFICADO")
-                .amount(300d)
+                .amount(new BigDecimal(300))
                 .currency("ARS")
                 .processedDate(Instant.now())
                 .date(Instant.now())
@@ -279,7 +280,7 @@ public class InvoiceTest {
                 .builder()
                 .eventId("1")
                 .eventType("CLASIFICADO")
-                .amount(200d)
+                .amount(new BigDecimal(200))
                 .currency("ARS")
                 .processedDate(Instant.now())
                 .date(Instant.now())
@@ -297,7 +298,7 @@ public class InvoiceTest {
 
 
         val res = invoice.addPayment(new PaymentHelper(paymentInputApi.getUserId(), CurrencyType.ARS, paymentInputApi.getAmount(), Option.none()));
-        assert res._1 == 0d;
+        assert res._1.compareTo(BigDecimal.ZERO) == 0;
     }
 
     @Test
@@ -306,11 +307,11 @@ public class InvoiceTest {
                 .builder()
                 .userId("facundo.leonardelli")
                 .currency("ARS")
-                .amount(150d).build();
+                .amount(new BigDecimal(150)).build();
 
         Payment payment = Payment
                 .builder()
-                .amount(250d)
+                .amount(new BigDecimal(250))
                 .currency("ARS")
                 .date(Instant.now())
                 .conversionFactor(none())
@@ -319,7 +320,7 @@ public class InvoiceTest {
                 .builder()
                 .eventId("1")
                 .eventType("CLASIFICADO")
-                .amount(300d)
+                .amount(new BigDecimal(300))
                 .currency("ARS")
                 .processedDate(Instant.now())
                 .date(Instant.now())
@@ -330,7 +331,7 @@ public class InvoiceTest {
                 .builder()
                 .eventId("1")
                 .eventType("CLASIFICADO")
-                .amount(200d)
+                .amount(new BigDecimal(200))
                 .currency("ARS")
                 .processedDate(Instant.now())
                 .date(Instant.now())
@@ -346,6 +347,6 @@ public class InvoiceTest {
                 .version(1L)
                 .build();
         val res = invoice.addPayment(new PaymentHelper(paymentInputApi.getUserId(), CurrencyType.ARS, paymentInputApi.getAmount(), Option.none()));
-        assert res._1 == 0d;
+        assert res._1.compareTo(BigDecimal.ZERO) == 0;
     }
 }

@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
@@ -30,7 +31,7 @@ public class ChargeTest {
                 .builder()
                 .eventId("")
                 .eventType("")
-                .amount(0d)
+                .amount(BigDecimal.ZERO)
                 .currency("")
                 .processedDate(Instant.now())
                 .date(Instant.now())

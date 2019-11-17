@@ -10,6 +10,7 @@ import io.vavr.collection.List;
 import io.vavr.control.Option;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Value
@@ -18,7 +19,7 @@ import java.time.Instant;
 public class Charge {
     String eventId;
     String eventType;
-    Double amount;
+    BigDecimal amount;
     String currency;
     Instant processedDate;
     Instant date;
@@ -39,7 +40,7 @@ public class Charge {
 
     @JsonProperty
     public String status() {
-        if (Double.compare(differenceToComplete(), 0d) == 1) {
+        if (differenceToComplete().compareTo(BigDecimal.ZERO) > 0) {
             return ChargeState.PENDING.getDescription();
         }
         return ChargeState.COMPLETED.getDescription();
@@ -49,12 +50,12 @@ public class Charge {
      *
      * @return difference between the charge amount and sum of payments
      */
-    public Double differenceToComplete() {
-        val effectiveAmountCharge = conversionFactor.map(c-> c.getValue() * this.amount).getOrElse(this.amount);
-        return payments.foldLeft(effectiveAmountCharge, (seed, elem) -> seed - elem.getAmount());
+    public BigDecimal differenceToComplete() {
+        val effectiveAmountCharge = conversionFactor.map(c-> c.getValue().multiply(this.amount)).getOrElse(this.amount);
+        return payments.foldLeft(effectiveAmountCharge, (seed, elem) -> seed.subtract(elem.getAmount()));
     }
 
-    public Charge addPayment(Double amount, PaymentHelper paymentHelper) {
+    public Charge addPayment(BigDecimal amount, PaymentHelper paymentHelper) {
         val newPayment = new Payment(
                 paymentHelper.getGenerateId(),
                 Instant.now(),
@@ -65,11 +66,11 @@ public class Charge {
         return toBuilder().payments(payments.append(newPayment)).build();
     }
 
-    public Double totalCharge() {
-        return conversionFactor.map(c -> c.getValue() * amount).getOrElse(amount);
+    public BigDecimal totalCharge() {
+        return conversionFactor.map(c -> c.getValue().multiply(amount)).getOrElse(amount);
     }
 
-    public Double totalPayments() {
-        return payments.foldLeft(0d, (seed, elem) -> seed + elem.getAmount());
+    public BigDecimal totalPayments() {
+        return payments.foldLeft(BigDecimal.ZERO, (seed, elem) -> seed.add(elem.getAmount()));
     }
 }

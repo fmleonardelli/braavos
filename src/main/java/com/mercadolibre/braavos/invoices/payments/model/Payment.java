@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Value
@@ -14,8 +15,8 @@ import java.time.Instant;
 public class Payment {
     String id;
     Instant date;
-    Double amount;
+    BigDecimal amount;
     String currency;
-    Double originalAmount;
+    BigDecimal originalAmount;
     Option<ConversionFactor> conversionFactor;
 }

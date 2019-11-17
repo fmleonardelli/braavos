@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Value
@@ -17,14 +18,14 @@ public class PaymentHelper {
     String generateId = UUID.randomUUID().toString();
     String userId;
     CurrencyType currencyType;
-    Double amount;
+    BigDecimal amount;
     Option<ConversionFactor> conversionFactor;
 
-    public Double getEffectiveAmount() {
-        return conversionFactor.map(c -> c.getValue() * amount).getOrElse(amount);
+    public BigDecimal getEffectiveAmount() {
+        return conversionFactor.map(c -> c.getValue().multiply(amount)).getOrElse(amount);
     }
 
-    public PaymentHelper withAmountAndCurrencyType(Double amount, CurrencyType currencyType, Option<ConversionFactor> conversionFactor) {
+    public PaymentHelper withAmountAndCurrencyType(BigDecimal amount, CurrencyType currencyType, Option<ConversionFactor> conversionFactor) {
         return toBuilder()
                 .amount(amount)
                 .currencyType(currencyType)
