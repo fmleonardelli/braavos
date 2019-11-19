@@ -1,23 +1,15 @@
 package com.mercadolibre.braavos.invoces.model;
 
-import com.mercadolibre.braavos.invoices.CurrencyType;
-import com.mercadolibre.braavos.invoices.Invoice;
 import com.mercadolibre.braavos.invoices.charges.Charge;
-import com.mercadolibre.braavos.invoices.payments.model.Payment;
-import com.mercadolibre.braavos.invoices.payments.PaymentInputApi;
-import com.mercadolibre.braavos.invoices.payments.model.PaymentHelper;
 import io.vavr.collection.List;
 import io.vavr.control.Option;
-import lombok.val;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDate;
 
-import static io.vavr.control.Option.none;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasProperty;
 

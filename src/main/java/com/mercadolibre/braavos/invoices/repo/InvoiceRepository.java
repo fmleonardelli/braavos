@@ -2,7 +2,7 @@ package com.mercadolibre.braavos.invoices.repo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibre.braavos.config.Repository;
-import com.mercadolibre.braavos.invoices.Invoice;
+import com.mercadolibre.braavos.invoices.model.Invoice;
 import com.mercadolibre.braavos.invoices.api.Paginated;
 import com.mercadolibre.braavos.invoices.repo.ops.RepositoryFind;
 import com.mercadolibre.braavos.invoices.repo.ops.RepositoryFindOne;

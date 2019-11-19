@@ -1,7 +1,7 @@
 package com.mercadolibre.braavos.external.quotation;
 
-import com.mercadolibre.braavos.invoices.CurrencyType;
-import com.mercadolibre.braavos.invoices.ConversionFactor;
+import com.mercadolibre.braavos.invoices.model.CurrencyType;
+import com.mercadolibre.braavos.invoices.model.ConversionFactor;
 import io.vavr.control.Either;
 
 import java.time.Instant;

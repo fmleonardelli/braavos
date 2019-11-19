@@ -1,7 +1,8 @@
-package com.mercadolibre.braavos.invoices;
+package com.mercadolibre.braavos.invoices.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.mercadolibre.braavos.invoices.InvoiceValidator;
 import com.mercadolibre.braavos.invoices.api.error.ValidationError;
 import com.mercadolibre.braavos.invoices.charges.Charge;
 import com.mercadolibre.braavos.invoices.charges.ChargeState;
@@ -72,7 +73,7 @@ public class Invoice implements InvoiceValidator {
     Tuple2<BigDecimal, List<Charge>> buildChargeWithPayment(BigDecimal amount, List<Charge> charges, List<Charge> resultingCharges, PaymentHelper paymentHelper) {
         val differenceToCompleteCharge = charges.head().differenceToComplete();
         //The payment amount is greater than the amount of the remaining charge
-        if (amount.compareTo(differenceToCompleteCharge) == 1) {
+        if (amount.compareTo(differenceToCompleteCharge) > 0) {
             val chargeWithPayment = charges.head().addPayment(differenceToCompleteCharge, paymentHelper);
             return distributePayment(amount.subtract(differenceToCompleteCharge), charges.tail(), resultingCharges.append(chargeWithPayment), paymentHelper);
         } else {

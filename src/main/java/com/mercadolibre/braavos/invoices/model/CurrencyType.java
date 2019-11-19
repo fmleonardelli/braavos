@@ -1,4 +1,4 @@
-package com.mercadolibre.braavos.invoices;
+package com.mercadolibre.braavos.invoices.model;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

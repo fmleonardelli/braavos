@@ -1,6 +1,8 @@
 package com.mercadolibre.braavos.invoices;
 
 import com.mercadolibre.braavos.external.quotation.QuotationSource;
+import com.mercadolibre.braavos.invoices.model.ConversionFactor;
+import com.mercadolibre.braavos.invoices.model.CurrencyType;
 import io.vavr.API;
 import io.vavr.control.Either;
 import io.vavr.control.Option;

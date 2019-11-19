@@ -2,7 +2,7 @@ package com.mercadolibre.braavos.invoices.charges;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mercadolibre.braavos.invoices.kafka.EventNotification;
-import com.mercadolibre.braavos.invoices.ConversionFactor;
+import com.mercadolibre.braavos.invoices.model.ConversionFactor;
 import com.mercadolibre.braavos.invoices.payments.model.Payment;
 import com.mercadolibre.braavos.invoices.payments.model.PaymentHelper;
 import io.vavr.Function2;
@@ -30,7 +30,7 @@ public class Charge {
         return (x, y) -> new Charge(
                 x.getEventId(),
                 x.getEventType(),
-                x.getAmount(),
+                x.getAmount().setScale(2, BigDecimal.ROUND_HALF_UP),
                 x.getCurrency(),
                 Instant.now(),
                 x.getDate(),
@@ -52,25 +52,25 @@ public class Charge {
      */
     public BigDecimal differenceToComplete() {
         val effectiveAmountCharge = conversionFactor.map(c-> c.getValue().multiply(this.amount)).getOrElse(this.amount);
-        return payments.foldLeft(effectiveAmountCharge, (seed, elem) -> seed.subtract(elem.getAmount()));
+        return payments.foldLeft(effectiveAmountCharge, (seed, elem) -> seed.subtract(elem.getAmount())).setScale(2, BigDecimal.ROUND_HALF_UP);
     }
 
     public Charge addPayment(BigDecimal amount, PaymentHelper paymentHelper) {
         val newPayment = new Payment(
                 paymentHelper.getGenerateId(),
                 Instant.now(),
-                amount,
+                amount.setScale(2, BigDecimal.ROUND_HALF_UP),
                 paymentHelper.getCurrencyType().getIdentifier(),
-                paymentHelper.getAmount(),
+                paymentHelper.getOriginalAmount(),
                 paymentHelper.getConversionFactor());
         return toBuilder().payments(payments.append(newPayment)).build();
     }
 
     public BigDecimal totalCharge() {
-        return conversionFactor.map(c -> c.getValue().multiply(amount)).getOrElse(amount);
+        return conversionFactor.map(c -> c.getValue().multiply(amount)).getOrElse(amount).setScale(2, BigDecimal.ROUND_HALF_UP);
     }
 
     public BigDecimal totalPayments() {
-        return payments.foldLeft(BigDecimal.ZERO, (seed, elem) -> seed.add(elem.getAmount()));
+        return payments.foldLeft(BigDecimal.ZERO, (seed, elem) -> seed.add(elem.getAmount())).setScale(2, BigDecimal.ROUND_HALF_UP);
     }
 }

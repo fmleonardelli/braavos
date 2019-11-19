@@ -1,4 +1,4 @@
-package com.mercadolibre.braavos.invoices;
+package com.mercadolibre.braavos.invoices.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AccessLevel;

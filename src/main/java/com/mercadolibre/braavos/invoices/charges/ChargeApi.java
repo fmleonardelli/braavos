@@ -1,7 +1,7 @@
 package com.mercadolibre.braavos.invoices.charges;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.mercadolibre.braavos.invoices.ConversionFactor;
+import com.mercadolibre.braavos.invoices.model.ConversionFactor;
 import com.mercadolibre.braavos.invoices.payments.PaymentApi;
 import io.vavr.Function1;
 import io.vavr.collection.List;

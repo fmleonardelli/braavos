@@ -11,5 +11,5 @@ public class InvoicesSummaryApi {
     String userId;
     BigDecimal totalCharges;
     BigDecimal totalPayments;
-    BigDecimal total;
+    BigDecimal debt;
 }

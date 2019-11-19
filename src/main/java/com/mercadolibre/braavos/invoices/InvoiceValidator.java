@@ -3,6 +3,8 @@ package com.mercadolibre.braavos.invoices;
 import com.mercadolibre.braavos.invoices.api.error.DataNotFound;
 import com.mercadolibre.braavos.invoices.api.error.ValidationError;
 import com.mercadolibre.braavos.invoices.charges.ChargeType;
+import com.mercadolibre.braavos.invoices.model.CurrencyType;
+import com.mercadolibre.braavos.invoices.model.Invoice;
 import io.vavr.collection.List;
 import io.vavr.control.Either;
 

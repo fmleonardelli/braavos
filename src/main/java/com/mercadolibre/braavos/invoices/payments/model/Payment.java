@@ -1,6 +1,6 @@
 package com.mercadolibre.braavos.invoices.payments.model;
 
-import com.mercadolibre.braavos.invoices.ConversionFactor;
+import com.mercadolibre.braavos.invoices.model.ConversionFactor;
 import io.vavr.control.Option;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
