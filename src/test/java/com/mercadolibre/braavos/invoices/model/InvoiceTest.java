@@ -1,7 +1,5 @@
-package com.mercadolibre.braavos.invoces.model;
+package com.mercadolibre.braavos.invoices.model;
 
-import com.mercadolibre.braavos.invoices.model.CurrencyType;
-import com.mercadolibre.braavos.invoices.model.Invoice;
 import com.mercadolibre.braavos.invoices.charges.Charge;
 import com.mercadolibre.braavos.invoices.payments.PaymentInputApi;
 import com.mercadolibre.braavos.invoices.payments.model.Payment;

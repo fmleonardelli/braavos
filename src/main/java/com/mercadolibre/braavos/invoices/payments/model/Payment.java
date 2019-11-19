@@ -14,9 +14,24 @@ import java.time.Instant;
 @AllArgsConstructor
 public class Payment {
     String id;
+    /**
+     * Payment Date
+     */
     Instant date;
+    /**
+     * Amount in default currency
+     */
     BigDecimal amount;
+    /**
+     * Entered Currency
+     */
     String currency;
+    /**
+     * Entered Amount
+     */
     BigDecimal originalAmount;
+    /**
+     * Currency Value for conversion
+     */
     Option<ConversionFactor> conversionFactor;
 }
